@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "nlp-erg"
+version = "0.1.0"
+description = "Assignment for Natural Language Processing - Text Reconstruction and Analysis"
+authors = ["Efthimis <you@example.com>"]
+readme = "README.md"
+packages = [{ include = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+nltk = "^3.8"
+spacy = "^3.7"
+gensim = "^4.3"
+pandas = "^2.1"
+scikit-learn = "^1.3"
+matplotlib = "^3.7"
+seaborn = "^0.13"
+torch = "^2.1"
+stanza = "^1.6"
+transformers = "^4.40"
+sentencepiece = "^0.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
