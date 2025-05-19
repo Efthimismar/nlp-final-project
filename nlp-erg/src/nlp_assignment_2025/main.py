@@ -1,10 +1,10 @@
-from preprocessing.tokenizer import tokenize_text
-from pipelines.custom_reconstructor import custom_reconstruct_sentence
-from pipelines.spacy_reconstructor import SpacyReconstructor
-from pipelines.transformers_reconstructor import TransformersReconstructor
+from nlp_assignment_2025.preprocessing.tokenizer import tokenize_text
+from nlp_assignment_2025.pipelines.custom_reconstructor import custom_reconstruct_sentence
+from nlp_assignment_2025.pipelines.spacy_reconstructor import SpacyReconstructor
+from nlp_assignment_2025.pipelines.transformers_reconstructor import TransformersReconstructor
 
 import os
-
+# We render the text from the files 
 def load_texts(file_path: str):
     with open(file_path, "r", encoding="utf-8") as f:
         texts = f.read().split('---')
@@ -40,7 +40,7 @@ def main():
     spacy_pipeline = SpacyReconstructor()
     transformers_pipeline = TransformersReconstructor()
 
-    # Collect reconstructed texts
+    # Here we collect and reconstruct texts
     custom_outputs = []
     spacy_outputs = []
     transformers_outputs = []
