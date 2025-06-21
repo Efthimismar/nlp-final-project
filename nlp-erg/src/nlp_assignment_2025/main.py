@@ -1,72 +1,62 @@
-from nlp_assignment_2025.preprocessing.tokenizer import tokenize_text
-from nlp_assignment_2025.pipelines.custom_reconstructor import custom_reconstruct_sentence
-from nlp_assignment_2025.pipelines.spacy_reconstructor import SpacyReconstructor
-from nlp_assignment_2025.pipelines.transformers_reconstructor import TransformersReconstructor
-
-import os
-# We render the text from the files 
-def load_texts(file_path: str):
-    with open(file_path, "r", encoding="utf-8") as f:
-        texts = f.read().split('---')
-    return [t.strip() for t in texts if t.strip()]
-
-def get_data_path():
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    data_path = os.path.join(base_dir, "data", "input_texts.txt")
-    return data_path
-
-def get_output_dir():
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    output_dir = os.path.join(base_dir, "data", "output_texts")
-    os.makedirs(output_dir, exist_ok=True)
-    return output_dir
-
-def save_text(texts, filename):
-    output_dir = get_output_dir()
-    save_path = os.path.join(output_dir, filename)
-    with open(save_path, "w", encoding="utf-8") as f:
-        for idx, text in enumerate(texts):
-            f.write(f"--- Reconstructed Text {idx+1} ---\n")
-            f.write(text)
-            f.write("\n\n")
-    print(f"✅ Saved {filename}")
+"""
+Main module for text reconstruction pipelines (Deliverable 1).
+Implements three different reconstruction approaches and saves results.
+"""
+from .config import config
+from .utils import load_texts_from_file, save_texts_to_file, logger
+from .pipelines.custom_reconstructor import CustomReconstructor
+from .pipelines.spacy_reconstructor import SpacyReconstructor
+from .pipelines.transformers_reconstructor import TransformersReconstructor
 
 def main():
-    print("🔍 Φόρτωση κειμένων...")
-    data_path = get_data_path()
-    texts = load_texts(data_path)
-
-    # Pipelines
+    """Run all reconstruction pipelines and save results."""
+    logger.info("🔍 Starting text reconstruction pipelines...")
+    
+    # Validate configuration and load texts
+    if not config.validate_config():
+        return
+    
+    texts = load_texts_from_file(config.INPUT_TEXTS_FILE)
+    if not texts:
+        logger.error("No texts loaded. Exiting.")
+        return
+    
+    # Initialize pipelines
+    logger.info("Initializing reconstruction pipelines...")
+    custom_pipeline = CustomReconstructor()
     spacy_pipeline = SpacyReconstructor()
     transformers_pipeline = TransformersReconstructor()
-
-    # Here we collect and reconstruct texts
+    
+    # Process texts with each pipeline
     custom_outputs = []
     spacy_outputs = []
     transformers_outputs = []
 
     for idx, text in enumerate(texts):
-        print(f"\n======= Κείμενο {idx+1} =======")
+        logger.info(f"Processing text {idx+1}/{len(texts)}")
 
-        print("\n🔵 Custom Pipeline:")
-        custom = custom_reconstruct_sentence(text)
-        print(custom)
-        custom_outputs.append(custom)
+        # Custom reconstruction
+        logger.info("🔵 Custom Pipeline")
+        custom_result = custom_pipeline.reconstruct(text)
+        custom_outputs.append(custom_result)
 
-        print("\n🟢 SpaCy Pipeline:")
-        spacy = spacy_pipeline.reconstruct(text)
-        print(spacy)
-        spacy_outputs.append(spacy)
+        # SpaCy reconstruction  
+        logger.info("🟢 SpaCy Pipeline")
+        spacy_result = spacy_pipeline.reconstruct(text)
+        spacy_outputs.append(spacy_result)
 
-        print("\n🟣 Transformers Pipeline:")
-        transformer = transformers_pipeline.reconstruct(text)
-        print(transformer)
-        transformers_outputs.append(transformer)
+        # Transformers reconstruction
+        logger.info("🟣 Transformers Pipeline")
+        transformers_result = transformers_pipeline.reconstruct(text)
+        transformers_outputs.append(transformers_result)
 
-    # Save outputs
-    save_text(custom_outputs, "custom_pipeline.txt")
-    save_text(spacy_outputs, "spacy_pipeline.txt")
-    save_text(transformers_outputs, "transformers_pipeline.txt")
+    # Save all outputs
+    logger.info("Saving reconstruction results...")
+    save_texts_to_file(custom_outputs, config.get_output_path("custom_pipeline.txt"))
+    save_texts_to_file(spacy_outputs, config.get_output_path("spacy_pipeline.txt"))
+    save_texts_to_file(transformers_outputs, config.get_output_path("transformers_pipeline.txt"))
+    
+    logger.info("✅ Text reconstruction completed successfully!")
 
 if __name__ == "__main__":
     main()
